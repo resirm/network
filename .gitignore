@@ -4,3 +4,5 @@
 *.ii
 *.s
 *.py[cod]
+dump
+build
