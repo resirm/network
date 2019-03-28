@@ -30,8 +30,12 @@ typedef std::deque<chat_message> chat_message_queue;
 class chat_participant
 {
 public:
+  chat_participant(std::string nickn="anonymous"): nickname(nickn) {  }
   virtual ~chat_participant() {}
   virtual void deliver(const chat_message& msg) = 0;
+  std::string get_name() { return nickname; }
+private:
+  std::string nickname;
 };
 
 typedef std::shared_ptr<chat_participant> chat_participant_ptr;
@@ -80,6 +84,7 @@ public:
     : socket_(std::move(socket)),
       room_(room)
   {
+    ip_ = socket_.remote_endpoint().address().to_string();
   }
 
   void start()
@@ -126,6 +131,8 @@ private:
         {
           if (!ec)
           {
+            // rewrite msg, add ip address to identify each client
+            read_msg_ = rewrite_msg(read_msg_);
             room_.deliver(read_msg_);
             do_read_header();
           }
@@ -159,10 +166,31 @@ private:
         });
   }
 
+  // rewrite msg, add ip address to identify each client
+  chat_message &rewrite_msg(chat_message &msg){
+    std::string ips = socket_.remote_endpoint().address().to_string();
+    ips += ": ";
+    std::cout << ips.size() << std::endl; // debug
+    std::cout << msg.body_length() << std::endl;
+    char ipseg[msg.max_body_length+1] = {};
+    std::strcat(ipseg, ips.data());
+    std::cout << ipseg << "," << std::endl;
+    std::strncat(ipseg, msg.body(), msg.body_length());
+    std::cout << ipseg << "," << std::endl;
+    msg.body_length(std::strlen(ipseg));
+    // std::strcat(msg.body, msg.body());
+    std::cout << msg.body_length() << std::endl;
+    std::memcpy(msg.body(), ipseg, msg.body_length());
+    msg.encode_header();
+    return msg;
+  }
+
+  const int ip_len = 15;
   tcp::socket socket_;
   chat_room& room_;
   chat_message read_msg_;
   chat_message_queue write_msgs_;
+  std::string ip_;
 };
 
 //----------------------------------------------------------------------
