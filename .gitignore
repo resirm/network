@@ -6,3 +6,4 @@
 *.py[cod]
 dump
 build
+__pycache__
