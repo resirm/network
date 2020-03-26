@@ -1,0 +1,33 @@
+#ifndef GANGDUO_BASE_TIMEZONE_HPP
+#define GANGDUO_BASE_TIMEZONE_HPP
+
+#include "gangduo/base/copyable.hpp"
+#include <memory>
+#include <time.h>
+
+namespace gangduo
+{
+
+class TimeZone: public copyable{
+public:
+    explicit TimeZone(const char* zonefile);
+    TimeZone(int eastOfUtc, const char* tzname);
+    TimeZone() = default;
+
+    bool valid() const { return static_cast<bool>(data_); }
+
+    struct tm toLocalTime(time_t secondsSinceEpoch) const;
+    time_t fromLocalTime(const struct tm&) const;
+
+    static struct tm toUtcTime(time_t secondsSinceEpoch, bool yday = false);
+    static time_t fromUtcTime(const struct tm&);
+    static time_t fromUtcTime(int year, int month, int day, int hour, int minute, int second);
+
+    struct Date;
+private:
+    std::shared_ptr<Date> data_;
+};
+
+} // namespace gangduo
+
+#endif // !GANGDUO_BASE_TIMEZONE_HPP
