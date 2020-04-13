@@ -138,3 +138,34 @@ class WeakCallback
 ```
 
 将operator()函数的模板参数独立，不依赖于类模板参数，再进行测试，发现只能接受右值参数的问题已经解决。
+
+### Type.h文件
+
+*implicit_cast*
+参考[这篇文章](https://www.cnblogs.com/youxin/p/4396349.html).
+以及Stack Overflow上的讨论:[帖子1](https://stackoverflow.com/questions/868306/what-is-the-difference-between-static-cast-and-implicit-cast)、
+[帖子2](https://stackoverflow.com/questions/862858/what-other-useful-casts-can-be-used-in-c/863761#863761).
+
+部分直接引用：
+
+>Cool, I thought of writing an up_cast with exactly the same semantics only I wouldn't have used identity<T>, what function does it fill? Why not just use template<class T, class U> T implicit_cast(U u) { return u; } – Motti May 15 '09 at 9:24
+5
+>>
+>With the boost one's, you can cast to a reference: implicit_cast<T&>(t), while your's will deduce U, and will copy everything. If an conversion failure occurs, the compiler will point to the caller in the boost version. But in your case, the conversion happens within the function and the error message would probably not be as simple. identity makes it require an explicit parameter. otherwise, it would accept things like "implicit_cast(t)" – Johannes Schaub - litb May 15 '09 at 9:28
+
+## net部分
+
+### SocketOps.cc文件
+
+#### 1
+```C++
+const struct sockaddr* sockets::sockaddr_cast(const struct sockaddr_in* addr)
+{
+  return static_cast<const struct sockaddr*>(implicit_cast<const void*>(addr));
+}
+```
+
+为什么要这么写？为什么不直接 `reinterpret_cast<const struct sockaddr*>(addr)` ?
+
+#### 2
+为什么isSelfConnect函数里，先声明sockaddr_in6再`const struct sockaddr_in* laddr4 = reinterpret_cast<struct sockaddr_in*>(&localaddr);`？

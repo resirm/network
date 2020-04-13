@@ -10,8 +10,8 @@ public:
     noncopyable(const noncopyable&) = delete;
     void operator=(const noncopyable&) = delete;
 protected:
-    noncopyable() = delete;
-    ~noncopyable() = delete;
+    noncopyable() = default;
+    ~noncopyable() = default;
 };
 
 } // namespace gangduo

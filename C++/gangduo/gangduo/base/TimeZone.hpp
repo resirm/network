@@ -23,9 +23,9 @@ public:
     static time_t fromUtcTime(const struct tm&);
     static time_t fromUtcTime(int year, int month, int day, int hour, int minute, int second);
 
-    struct Date;
+    struct Data;
 private:
-    std::shared_ptr<Date> data_;
+    std::shared_ptr<Data> data_;
 };
 
 } // namespace gangduo
